@@ -1,6 +1,14 @@
 _base_ = 'mmdet::pascal_voc/faster-rcnn_r50-caffe-c4_ms-18k_voc0712.py'
 # https://github.com/open-mmlab/mmdetection/blob/main/configs/pascal_voc/faster-rcnn_r50-caffe-c4_ms-18k_voc0712.py
 
+
+metainfo = {
+    'classes':
+    ('cabinet', 'sofa', 'slippers', 'bed', 'table', 'feces', 'closetool', 'stool', 'curtain', 'book', 'wire', 'trashcan', 'carpet', 'socks'),
+    # palette is a list of color tuples, which is used for visualization.
+    'palette': [(106, 0, 228), (119, 11, 32), (165, 42, 42), (0, 0, 192), (197, 226, 255), (0, 60, 100), (0, 0, 142), (255, 77, 255), (153, 69, 1), (120, 166, 157), (0, 182, 199), (0, 226, 252), (182, 182, 255), (0, 0, 230)]
+}
+
 data_preprocessor = dict(
     type='DetDataPreprocessor',
     mean=[123.675, 116.28, 103.53],
@@ -59,7 +67,8 @@ train_dataloader = dict(
             dict(
                 type=dataset_type,
                 data_root=data_root,
-                ann_file=f'{data_root}{dataset_name}/ImageSets/Main/trainval.txt',
+                metainfo=metainfo,
+                ann_file=f'{dataset_name}/ImageSets/Main/trainval.txt',
                 data_prefix=dict(sub_data_root=f'{dataset_name}/'),
                 filter_cfg=dict(filter_empty_gt=True, min_size=32),
                 pipeline=train_pipeline)
@@ -74,14 +83,15 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file=f'{data_root}{dataset_name}/ImageSets/Main/test.txt',
+        metainfo=metainfo,
+        ann_file=f'{dataset_name}/ImageSets/Main/test.txt',
         data_prefix=dict(sub_data_root=f'{dataset_name}/'),
         test_mode=True,
         pipeline=test_pipeline))
 
 test_dataloader = val_dataloader
 
-train_cfg = dict(type='IterBasedTrainLoop', max_iters=24000, val_interval=2000)
+train_cfg = dict(type='IterBasedTrainLoop', max_iters=24000, val_interval=600)
 
 param_scheduler = [
     dict(
@@ -98,10 +108,12 @@ param_scheduler = [
 val_evaluator = dict(type='VOCMetric', metric='mAP', eval_mode='11points')
 test_evaluator = val_evaluator
 
-default_hooks = dict(checkpoint=dict(by_epoch=False, interval=2000))
+default_hooks = dict(checkpoint=dict(by_epoch=False, interval=600))
 
 log_processor = dict(by_epoch=False)
 
 custom_imports = dict(
     imports=['mmselfsup.models.utils.res_layer_extra_norm'],
     allow_failed_imports=False)
+
+load_from = 'work_dirs/benchmarks/faster-rcnn_r50-c4_ms-24k_voc0712_use_amicro_indoor_small_dataset/iter_3600.pth'
