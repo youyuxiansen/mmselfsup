@@ -47,7 +47,8 @@ test_pipeline = [
                    'scale_factor'))
 ]
 dataset_type = 'VOCDataset'
-data_root = 'data/VOCdevkit/'
+data_root = '/mnt/e/data/VOCdevkit/'
+dataset_name = 'small_amount_of_indoor_new_20220228'
 
 train_dataloader = dict(
     sampler=dict(type='InfiniteSampler', shuffle=True),
@@ -56,23 +57,28 @@ train_dataloader = dict(
         type='ConcatDataset',
         datasets=[
             dict(
-                type='VOCDataset',
+                type=dataset_type,
                 data_root=data_root,
-                ann_file='VOC2007/ImageSets/Main/trainval.txt',
-                data_prefix=dict(sub_data_root='VOC2007/'),
-                filter_cfg=dict(filter_empty_gt=True, min_size=32),
-                pipeline=train_pipeline),
-            dict(
-                type='VOCDataset',
-                data_root=data_root,
-                ann_file='VOC2012/ImageSets/Main/trainval.txt',
-                data_prefix=dict(sub_data_root='VOC2012/'),
+                ann_file=f'{data_root}{dataset_name}/ImageSets/Main/trainval.txt',
+                data_prefix=dict(sub_data_root=f'{dataset_name}/'),
                 filter_cfg=dict(filter_empty_gt=True, min_size=32),
                 pipeline=train_pipeline)
         ]))
 
+val_dataloader = dict(
+    batch_size=1,
+    num_workers=2,
+    persistent_workers=True,
+    drop_last=False,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type=dataset_type,
+        data_root=data_root,
+        ann_file=f'{data_root}{dataset_name}/ImageSets/Main/test.txt',
+        data_prefix=dict(sub_data_root=f'{dataset_name}/'),
+        test_mode=True,
+        pipeline=test_pipeline))
 
-val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 test_dataloader = val_dataloader
 
 train_cfg = dict(type='IterBasedTrainLoop', max_iters=24000, val_interval=2000)
