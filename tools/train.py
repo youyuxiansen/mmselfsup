@@ -6,6 +6,9 @@ import os.path as osp
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
 
+import os.path as osp
+import sys
+sys.path.insert(0, osp.join(osp.dirname(osp.abspath(__file__)), '../'))
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a model')
